@@ -31,24 +31,28 @@ const keyboard = (() => {
         220: KEY.STATS, // backspace
     });
 
-    const keys = settings.loadOr('input.keyboard.map', defaultMap);
+    const settingsKey = 'input.keyboard.map';
+    const keyMap = settings.loadOr(settingsKey, defaultMap);
 
-    const remap = () => {
+    const remap = (map = {}) => {
+        // map = {38: KEY.DOWN, 40: KEY.UP};
+
+        settings.set(settingsKey, map);
+        console.log('remapped')
     }
 
-    const onKey = (code, callback) => {
-        if (code in keys) callback(keys[code]);
-    };
+    const onKey = (code, callback) => !keyMap[code] || callback(keyMap[code]);
 
     return {
         init: () => {
             const body = document.body;
-            body.addEventListener('keyup', ev => onKey(ev.keyCode, key => event.pub(KEY_RELEASED, {key: key})));
-            body.addEventListener('keydown', ev => onKey(ev.keyCode, key => event.pub(KEY_PRESSED, {key: key})));
+            body.addEventListener('keyup', e => onKey(e.keyCode, key => event.pub(KEY_RELEASED, {key: key})));
+            body.addEventListener('keydown', e => onKey(e.keyCode, key => event.pub(KEY_PRESSED, {key: key})));
             log.info('[input] keyboard has been initialized');
         },
         settings: {
             remap
         }
     }
-})(event, document, KEY, settings);
+})
+(event, document, KEY, settings);
